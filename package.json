@@ -1,6 +1,6 @@
 {
   "name": "wazobiamail-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Official React 18/19 hooks, Context Provider, and React Email helpers for the WazobiaMail API",
   "keywords": [
     "wazobiamail",
@@ -51,7 +51,7 @@
     "prepublishOnly": "bun run build && bun test"
   },
   "dependencies": {
-    "wazobiamail": "^0.1.0"
+    "wazobiamail": "^0.1.1"
   },
   "peerDependencies": {
     "@react-email/render": ">=0.0.10",

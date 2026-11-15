@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { SendMessageRequest, SendMessageResponse } from 'wazobiamail';
+import type { AttachmentUploadResponse, FileAttachment, SendMessageRequest, SendMessageResponse } from 'wazobiamail';
 import { useWazobiaMail } from '../context';
 import { sendReactEmail } from '../email/renderEmail';
 import type {
@@ -76,6 +76,24 @@ export function useSendMail(options: UseSendMailOptions = {}): UseSendMailReturn
     [client, executeDispatch]
   );
 
+  const sendWithAttachments = useCallback(
+    (
+      payload: SendMessageRequest,
+      attachments: FileAttachment[],
+      sendOptions?: { idempotencyKey?: string }
+    ) => executeDispatch(() => client.messages.sendWithAttachments(payload, attachments, sendOptions)),
+    [client, executeDispatch]
+  );
+
+  const uploadAttachment = useCallback(
+    (
+      file: Blob | Uint8Array | string | FileAttachment,
+      fileName?: string,
+      sendOptions?: { idempotencyKey?: string }
+    ): Promise<AttachmentUploadResponse> => client.messages.uploadAttachment(file, fileName, sendOptions),
+    [client]
+  );
+
   const sendReact = useCallback(
     (payload: SendReactEmailPayload, sendOptions?: SendReactEmailOptions) =>
       executeDispatch(() => sendReactEmail(client, payload, sendOptions)),
@@ -88,6 +106,8 @@ export function useSendMail(options: UseSendMailOptions = {}): UseSendMailReturn
     error,
     data,
     send,
+    sendWithAttachments,
+    uploadAttachment,
     sendReact,
     reset,
   };

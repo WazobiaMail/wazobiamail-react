@@ -1,5 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import type {
+  AttachmentUploadResponse,
+  FileAttachment,
   WazobiaMail,
   WazobiaClientOptions,
   SendMessageRequest,
@@ -70,6 +72,16 @@ export interface UseSendMailReturn {
     payload: SendMessageRequest,
     options?: { idempotencyKey?: string }
   ) => Promise<SendMessageResponse>;
+  sendWithAttachments: (
+    payload: SendMessageRequest,
+    attachments: FileAttachment[],
+    options?: { idempotencyKey?: string }
+  ) => Promise<SendMessageResponse>;
+  uploadAttachment: (
+    file: Blob | Uint8Array | string | FileAttachment,
+    fileName?: string,
+    options?: { idempotencyKey?: string }
+  ) => Promise<AttachmentUploadResponse>;
   sendReact: (
     payload: SendReactEmailPayload,
     options?: SendReactEmailOptions

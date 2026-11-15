@@ -115,7 +115,7 @@ export async function sendReactEmail(
   payload: SendReactEmailPayload,
   options: SendReactEmailOptions = {}
 ): Promise<SendMessageResponse> {
-  const { react, html: explicitHtml, text: explicitText, ...rest } = payload;
+  const { react, html: explicitHtml, text: explicitText, files, ...rest } = payload;
 
   const needsHtml = explicitHtml === undefined && rest.htmlBody === undefined;
   const wantsPlainText =
@@ -145,8 +145,10 @@ export async function sendReactEmail(
         : {}),
   };
 
-  return client.messages.send(
-    request,
-    options.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : undefined
-  );
+  const requestOptions = options.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : undefined;
+  if (files && files.length > 0) {
+    return client.messages.sendWithAttachments(request, files, requestOptions);
+  }
+
+  return client.messages.send(request, requestOptions);
 }

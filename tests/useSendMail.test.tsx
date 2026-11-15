@@ -135,4 +135,35 @@ describe('useSendMail Hook', () => {
     expect(result.current.error?.message).toBe('Quota exceeded');
     expect(callbackMessage).toBe('Quota exceeded');
   });
+
+  it('sends emails with binary attachments and uploads standalone files', async () => {
+    const mockClient = new WazobiaMail({ apiKey: 'wzbm_test_mock_key' });
+    mockClient.messages.sendWithAttachments = mock(async (_req, files) => ({
+      success: true,
+      message: 'Queued',
+      data: { result: { status: 'queued', trackingId: `trk_${files[0].fileName}`, recipients: 1 } },
+    })) as any;
+    mockClient.messages.uploadAttachment = mock(async () => ({
+      success: true,
+      message: 'Uploaded',
+      data: { file: { fileName: 'invoice.pdf', sizeBytes: 5, publicUrl: 'https://cdn.example.com/invoice.pdf' } },
+    })) as any;
+
+    const { result } = renderHook(() => useSendMail({ client: mockClient }));
+
+    await act(async () => {
+      const uploadRes = await result.current.uploadAttachment(new Uint8Array([1, 2, 3, 4, 5]), 'invoice.pdf');
+      expect(uploadRes.data.file.fileName).toBe('invoice.pdf');
+
+      const sendRes = await result.current.sendWithAttachments(
+        { from: 'sender@example.com', to: 'user@example.com', subject: 'Invoice' },
+        [{ fileName: 'invoice.pdf', content: new Uint8Array([1, 2, 3]), contentType: 'application/pdf' }]
+      );
+      expect(sendRes.data.result.trackingId).toBe('trk_invoice.pdf');
+    });
+
+    expect(result.current.isSuccess).toBe(true);
+    expect(mockClient.messages.sendWithAttachments).toHaveBeenCalledTimes(1);
+    expect(mockClient.messages.uploadAttachment).toHaveBeenCalledTimes(1);
+  });
 });
